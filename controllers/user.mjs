@@ -11,13 +11,17 @@ const registerController = async (req, res, next) => {
     // throw new Error(JSON.stringify({ error: "input is not valid" }))
   }
 
+  // hash password of user
+
+  const newHashedPassword = await bcrypt.hash(req.body.password, 10);
+
   // add  user in db
 
   await prisma.user.create({
     data: {
       name: req.body.name,
       email: req.body.email,
-      password: req.body.password,
+      password: newHashedPassword,
     },
   });
   // send response
