@@ -1,7 +1,8 @@
 import { readFile, writeFile } from "node:fs/promises";
-
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../db.mjs";
+import { error } from "node:console";
 
 const registerController = async (req, res, next) => {
   if (!req.body.name || !req.body.email || !req.body.password) {
@@ -37,12 +38,19 @@ const loginController = async (req, res, next) => {
     },
   });
 
-  // match password
   if (!user) {
     res.statusCode = 400;
     return res.json({ error: "password is wrong" });
   }
 
+  // match password
+  const isOk = await bcrypt.compare(req.body.password, user.password);
+  if (!isOk) {
+    res.statusCode = 404;
+    return res.json({
+      error: "password is wrong",
+    });
+  }
   const token = jwt.sign(
     { name: user.name, email: user.email },
     process.env.TOKEN_SECRET,
