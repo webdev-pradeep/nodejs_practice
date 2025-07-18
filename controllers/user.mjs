@@ -3,20 +3,34 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../db.mjs";
 import { error } from "node:console";
+import * as z from "zod";
+
+// input model for user registration
+const UserModel = z.object({
+  name: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9\s]*$/, "Name cannot contain special characters"),
+  email: z.email({ message: "Invalid email" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long" }),
+});
 
 const registerController = async (req, res, next) => {
-  if (!req.body.name || !req.body.email || !req.body.password) {
+  // input check
+  try {
+    await UserModel.parseAsync(req.body);
+  } catch (e) {
     res.statusCode = 400;
-    return res.json({ error: "input is not valid" });
-    // throw new Error(JSON.stringify({ error: "input is not valid" }))
+    const msg = z.prettifyError(e);
+    return res.json({ error: msg });
   }
 
   // hash password of user
-
   const newHashedPassword = await bcrypt.hash(req.body.password, 10);
 
   // add  user in db
-
   await prisma.user.create({
     data: {
       name: req.body.name,
@@ -28,11 +42,20 @@ const registerController = async (req, res, next) => {
   res.json({ message: "register successful" });
 };
 
+// input model for user login
+const UserLoginModel = z.object({
+  email: z.email({ message: "Invalid email" }),
+  password: z
+    .string()
+    .min(4, { message: "Password must be at least 8 characters long" }),
+});
+
 const loginController = async (req, res, next) => {
-  // validate input
-  if (!req.body.email || !req.body.password) {
+  const result = await UserLoginModel.safeParseAsync(req.body);
+  if (!result.success) {
     res.statusCode = 400;
-    return res.json({ error: "input is not valid" });
+    const msg = z.prettifyError(result.error);
+    return res.json({ error: msg });
   }
 
   // find user in db
@@ -51,9 +74,7 @@ const loginController = async (req, res, next) => {
   const isOk = await bcrypt.compare(req.body.password, user.password);
   if (!isOk) {
     res.statusCode = 404;
-    return res.json({
-      error: "password is wrong",
-    });
+    return res.json({ error: "password is wrong" });
   }
   const token = jwt.sign(
     { name: user.name, email: user.email },
