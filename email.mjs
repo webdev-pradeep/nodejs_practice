@@ -1,4 +1,4 @@
-// import nodemailer from "nodemailer";
+import nodemailer from "nodemailer";
 
 // // Create a test account or replace with real credentials.
 // const transporter = nodemailer.createTransport({
@@ -10,17 +10,23 @@
 //   },
 // });
 
-// // Wrap in an async IIFE so we can use await.
-// (async () => {
-//   const sendMail = await transporter.sendMail({
-//     from: '"Maddison Foo Koch" <maddison53@ethereal.email>',
-//     to: "bar@example.com, baz@example.com",
-//     subject: "Hello ✔",
-//     text: "Hello world?", // plain‑text body
-//     html: "<b>Hello world?</b>", // HTML body
-//   });
+// Looking to send emails in production? Check out our Email API/SMTP product!
+var transport = nodemailer.createTransport({
+  host: "sandbox.smtp.mailtrap.io",
+  port: 2525,
+  auth: {
+    user: "887c25528eb947",
+    pass: "97e8a349acac94",
+  },
+});
 
-//   console.log("Message sent:", info.messageId);
-// })();
+const sendEmail = async (to, subject, body) => {
+  const info = await transport.sendMail({
+    from: "apple Server <a@apple.com>",
+    to,
+    subject,
+    html: body,
+  });
+};
 
-// // export default sendMail();
+export { sendEmail };

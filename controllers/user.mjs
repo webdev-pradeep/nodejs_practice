@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import prisma from "../db.mjs";
 import { error } from "node:console";
 import * as z from "zod";
+import { sendEmail } from "../email.mjs";
 
 // input model for user registration
 const UserModel = z.object({
@@ -14,7 +15,7 @@ const UserModel = z.object({
   email: z.email({ message: "Invalid email" }),
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters long" }),
+    .min(5, { message: "Password must be at least 8 characters long" }),
 });
 
 const registerController = async (req, res, next) => {
@@ -85,4 +86,13 @@ const loginController = async (req, res, next) => {
   res.json({ token, name: user.name, email: user.email });
 };
 
-export { registerController, loginController };
+const forgotPasswordController = async (req, res, next) => {
+  //  TODO: check for user in DB
+
+  const x = await sendEmail(req.body.email, "test", "<h3>Banana</h3>");
+  console.log(x);
+
+  res.json({ message: "email sent" });
+};
+
+export { registerController, loginController, forgotPasswordController };

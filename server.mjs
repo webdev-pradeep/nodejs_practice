@@ -1,6 +1,10 @@
 import "dotenv/config";
 import express from "express";
-import { registerController, loginController } from "./controllers/user.mjs";
+import {
+  registerController,
+  loginController,
+  forgotPasswordController,
+} from "./controllers/user.mjs";
 import { prizeController } from "./controllers/prize.mjs";
 import { globalMiddleware, authMiddleware } from "./middleware.mjs";
 import { errorController, undefinedRouteHandler } from "./error.mjs";
@@ -13,6 +17,7 @@ server.use(globalMiddleware);
 
 server.post("/register", registerController);
 server.post("/login", loginController);
+server.post("/forgot_password", forgotPasswordController);
 server.get("/prize", authMiddleware, prizeController);
 
 // Catch-all route
