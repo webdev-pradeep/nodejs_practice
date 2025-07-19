@@ -14,8 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model Attendance {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -24,9 +22,11 @@ model Attendance {
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
-  email      String       @unique
-  name       String
-  password   String
-  Attendance Attendance[]
+  id               Int          @id @default(autoincrement())
+  email            String       @unique
+  name             String
+  password         String
+  Attendance       Attendance[]
+  resetToken       String?      @default("")
+  resetTokenExpiry DateTime     @default(now())
 }
